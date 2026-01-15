@@ -69,12 +69,19 @@ export function BehanceJobCard({ job }: BehanceJobCardProps) {
             )}
             
             {/* Source badge - Behance blue */}
-            <div className="absolute -bottom-1 -right-1 rounded-full p-1 bg-[#1769ff]/10">
-              <Icon 
-                icon="mdi:behance" 
-                className="h-3.5 w-3.5 text-[#1769ff]" 
-              />
-            </div>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="absolute -bottom-1 -right-1 rounded-full p-1.5 bg-[#1769ff]/90 shadow-lg border-2 border-card cursor-default hover:scale-110 transition-transform">
+                  <Icon 
+                    icon="mdi:behance" 
+                    className="h-3 w-3 text-white" 
+                  />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="text-xs">
+                Found on Behance
+              </TooltipContent>
+            </Tooltip>
           </div>
 
           {/* Title & Company */}

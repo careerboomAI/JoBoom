@@ -162,13 +162,12 @@ Based on the query and profile, which platforms should we search?`
 No user profile available. Based on the query alone, which platforms should we search?`
 
   const completion = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
+    model: "gpt-5-mini",
     messages: [
       { role: "system", content: systemPrompt },
       { role: "user", content: userPrompt },
     ],
     response_format: { type: "json_object" },
-    temperature: 0.3, // Lower temperature for more consistent decisions
   })
 
   const content = completion.choices[0]?.message?.content

@@ -32,7 +32,7 @@
 | **Styling** | Tailwind CSS 4 |
 | **UI Components** | shadcn/ui + Radix UI |
 | **Icons** | Iconify + Lucide |
-| **AI** | OpenAI GPT-4o-mini |
+| **AI** | OpenAI GPT-5-mini |
 | **Job Data** | Apify (LinkedIn, Upwork, Indeed, Behance, Freelance.com scrapers) |
 | **Profile Data** | EnrichLayer (LinkedIn profiles) |
 | **File Parsing** | unpdf (PDF), mammoth (DOCX) |
@@ -55,7 +55,7 @@
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-username/joboom.git
+git clone https://github.com/careerboomAI/JoBoom
 cd joboom
 ```
 

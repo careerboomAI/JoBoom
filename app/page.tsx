@@ -12,9 +12,11 @@ import { EmptyState } from "@/components/empty-state"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
+import { UserProfileCard } from "@/components/user-profile-card"
 import { useToast } from "@/hooks/use-toast"
 import type { AnyJobResult } from "@/components/job-grid"
 import type { UserProfile } from "@/types/user-profile"
+import type { Source } from "@/components/search-suggestions"
 import { cvToUserProfile, mergeUserProfiles, extractProfileForSearch } from "@/types/user-profile"
 
 export default function Home() {
@@ -39,6 +41,7 @@ export default function Home() {
   const [hasSearched, setHasSearched] = useState(false)
   const [results, setResults] = useState<AnyJobResult[]>([])
   const [totalMatches, setTotalMatches] = useState(0)
+  const [showProfilePanel, setShowProfilePanel] = useState(true)
   
   // Ref to track if current search is still active/valid
   const searchIdRef = useRef(0)
@@ -338,8 +341,33 @@ export default function Home() {
     }
   }, [searchQuery, filters, userProfile, toast])
 
-  const handleSuggestionClick = (suggestion: string) => {
+  const handleSuggestionClick = (suggestion: string, sources: Source[]) => {
     setSearchQuery(suggestion)
+    
+    // Update filters based on selected sources
+    if (sources.includes("auto")) {
+      // If auto is in sources, enable auto mode and disable specific sources
+      setFilters({
+        auto: true,
+        linkedin: false,
+        upwork: false,
+        behance: false,
+        glassdoor: false,
+        indeed: false,
+        freelance: false,
+      })
+    } else {
+      // Disable auto and enable only the specified sources
+      setFilters({
+        auto: false,
+        linkedin: sources.includes("linkedin"),
+        upwork: sources.includes("upwork"),
+        behance: sources.includes("behance"),
+        glassdoor: false,
+        indeed: sources.includes("indeed"),
+        freelance: sources.includes("freelance"),
+      })
+    }
   }
 
   return (
@@ -363,7 +391,7 @@ export default function Home() {
                 <ThemeToggle />
                 <Button variant="outline" size="sm" asChild>
                   <a
-                    href="https://github.com/hireboom/hireboom"
+                    href="https://github.com/careerboomAI/JoBoom"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2"
@@ -465,8 +493,33 @@ export default function Home() {
 
               {results.length > 0 ? (
                 <>
-                  <ResultsHeader count={results.length} total={totalMatches} />
-                  <JobGrid jobs={results} />
+                  <ResultsHeader 
+                    count={results.length} 
+                    total={totalMatches}
+                    userProfile={userProfile}
+                    showProfilePanel={showProfilePanel}
+                    onToggleProfilePanel={() => setShowProfilePanel(true)}
+                  />
+                  
+                  {/* Two-column layout: Profile on left, Jobs on right */}
+                  <div className="flex flex-col lg:flex-row gap-6">
+                    {/* Left sidebar - User Profile Card (only shown if profile exists and panel is visible) */}
+                    {userProfile && showProfilePanel && (
+                      <aside className="lg:w-80 xl:w-96 flex-shrink-0 animate-in fade-in slide-in-from-left-4 duration-500">
+                        <div className="lg:sticky lg:top-4">
+                          <UserProfileCard 
+                            profile={userProfile}
+                            onHide={() => setShowProfilePanel(false)}
+                          />
+                        </div>
+                      </aside>
+                    )}
+                    
+                    {/* Right content - Job Grid */}
+                    <div className="flex-1 min-w-0">
+                      <JobGrid jobs={results} />
+                    </div>
+                  </div>
                 </>
               ) : (
                  /* Show empty state only if we are completely done searching and found nothing */

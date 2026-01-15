@@ -131,12 +131,19 @@ export function IndeedJobCard({ job }: IndeedJobCardProps) {
             )}
             
             {/* Source badge */}
-            <div className="absolute -bottom-1 -right-1 rounded-full p-1 bg-[#003A9B]/10">
-              <Icon 
-                icon="simple-icons:indeed" 
-                className="h-3.5 w-3.5 text-[#003A9B]" 
-              />
-            </div>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="absolute -bottom-1 -right-1 rounded-full p-1.5 bg-[#003A9B]/90 shadow-lg border-2 border-card cursor-default hover:scale-110 transition-transform">
+                  <Icon 
+                    icon="simple-icons:indeed" 
+                    className="h-3 w-3 text-white" 
+                  />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="text-xs">
+                Found on Indeed
+              </TooltipContent>
+            </Tooltip>
           </div>
 
           {/* Title & Company */}

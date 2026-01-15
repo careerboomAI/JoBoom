@@ -136,13 +136,12 @@ Generate the best Behance search keyword based on the query and profile. Focus o
 No user profile available. Generate the best Behance search keyword based on the query alone. Focus on creative/design roles.`
 
   const completion = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
+    model: "gpt-5-mini",
     messages: [
       { role: "system", content: systemPrompt },
       { role: "user", content: userPrompt },
     ],
     response_format: { type: "json_object" },
-    temperature: 0.7,
   })
 
   const content = completion.choices[0]?.message?.content

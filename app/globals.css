@@ -125,3 +125,22 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Marquee animations for search suggestions */
+@keyframes marquee-left {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes marquee-right {
+  0% {
+    transform: translateX(-50%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}

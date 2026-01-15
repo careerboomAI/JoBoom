@@ -90,36 +90,42 @@ const SOURCE_CONFIG = {
     icon: "mdi:linkedin",
     color: "text-[#0077b5]",
     bgColor: "bg-[#0077b5]/10",
+    solidBg: "bg-[#0077b5]/90",
     label: "LinkedIn",
   },
   upwork: {
     icon: "simple-icons:upwork",
     color: "text-[#14A800]",
     bgColor: "bg-[#14A800]/10",
+    solidBg: "bg-[#14A800]/90",
     label: "Upwork",
   },
   behance: {
     icon: "mdi:behance",
     color: "text-[#1769ff]",
     bgColor: "bg-[#1769ff]/10",
+    solidBg: "bg-[#1769ff]/90",
     label: "Behance",
   },
   glassdoor: {
     icon: "cib:glassdoor",
     color: "text-[#0CAA41]",
     bgColor: "bg-[#0CAA41]/10",
+    solidBg: "bg-[#0CAA41]/90",
     label: "Glassdoor",
   },
   indeed: {
     icon: "simple-icons:indeed",
     color: "text-[#003A9B]",
     bgColor: "bg-[#003A9B]/10",
+    solidBg: "bg-[#003A9B]/90",
     label: "Indeed",
   },
   freelance: {
     icon: "simple-icons:freelancer",
     color: "text-[#29B2FE]",
     bgColor: "bg-[#29B2FE]/10",
+    solidBg: "bg-[#29B2FE]/90",
     label: "Freelance.com",
   },
 }
@@ -188,15 +194,22 @@ export function JobCard({ job }: JobCardProps) {
             )}
             
             {/* Source badge */}
-            <div className={cn(
-              "absolute -bottom-1 -right-1 rounded-full p-1",
-              sourceConfig.bgColor
-            )}>
-              <Icon 
-                icon={sourceConfig.icon} 
-                className={cn("h-3.5 w-3.5", sourceConfig.color)} 
-              />
-            </div>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className={cn(
+                  "absolute -bottom-1 -right-1 rounded-full p-1.5 shadow-lg border-2 border-card cursor-default hover:scale-110 transition-transform",
+                  sourceConfig.solidBg
+                )}>
+                  <Icon 
+                    icon={sourceConfig.icon} 
+                    className="h-3 w-3 text-white" 
+                  />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="text-xs">
+                Found on {sourceConfig.label}
+              </TooltipContent>
+            </Tooltip>
           </div>
 
           {/* Title & Company */}

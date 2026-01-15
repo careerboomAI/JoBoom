@@ -307,13 +307,12 @@ Please generate exactly ${NUM_QUERIES_TO_GENERATE} optimized search ${NUM_QUERIE
 Return ONLY valid JSON matching the specified format.`
 
   const response = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
+    model: "gpt-5-mini",
     messages: [
       { role: "system", content: systemPrompt },
       { role: "user", content: userPrompt }
     ],
     response_format: { type: "json_object" },
-    temperature: 0.7,
   })
 
   const content = response.choices[0].message.content

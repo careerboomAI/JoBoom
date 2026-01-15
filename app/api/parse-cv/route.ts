@@ -159,9 +159,8 @@ export async function POST(request: NextRequest) {
         { role: "system", content: "You are a precise CV parsing assistant. Output valid JSON only." },
         { role: "user", content: prompt }
       ],
-      model: "gpt-4o-mini",
+      model: "gpt-5-mini",
       response_format: { type: "json_object" },
-      temperature: 0.1,
     })
 
     const content = completion.choices[0].message.content

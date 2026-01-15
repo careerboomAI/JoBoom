@@ -139,13 +139,12 @@ Generate search terms based on the query and profile.`
 No user profile available. Generate search terms based on the query alone.`
 
   const completion = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
+    model: "gpt-5-mini",
     messages: [
       { role: "system", content: systemPrompt },
       { role: "user", content: userPrompt },
     ],
     response_format: { type: "json_object" },
-    temperature: 0.7,
   })
 
   const content = completion.choices[0]?.message?.content
