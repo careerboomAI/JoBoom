@@ -115,10 +115,10 @@ async function generateSearchQuery(
   query: string, 
   userProfile?: any
 ): Promise<CreateFreelanceSearchQueryOutput> {
-  // Use internal URL for server-to-server calls (never expose to frontend)
-  const baseUrl = process.env.INTERNAL_API_URL || process.env.VERCEL_URL 
-    ? `https://${process.env.VERCEL_URL}` 
-    : "http://localhost:3000"
+  // For server-to-server calls, construct absolute URL properly
+  const baseUrl = process.env.VERCEL_URL 
+    ? `https://${process.env.VERCEL_URL}`
+    : `http://localhost:${process.env.PORT || 3000}`
   
   const response = await fetch(`${baseUrl}/api/create-search-query/freelance`, {
     method: "POST",

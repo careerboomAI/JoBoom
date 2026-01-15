@@ -18,27 +18,40 @@ const APIFY_API_TOKEN = process.env.APIFY_API_TOKEN
  * 4. Returns job results
  */
 export async function POST(request: NextRequest) {
+  const startTime = Date.now()
+  
   try {
+    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+    console.log("🚀 [LinkedIn] POST request received at", new Date().toISOString())
+    
     const { query, userProfile } = await request.json()
+    console.log("📥 [LinkedIn] Request body parsed. Query:", query)
+    console.log("📥 [LinkedIn] User profile provided:", !!userProfile)
 
     if (!query) {
+      console.log("❌ [LinkedIn] No query provided, returning 400")
       return NextResponse.json({ error: "Query is required" }, { status: 400 })
     }
 
     if (!APIFY_API_TOKEN) {
+      console.log("❌ [LinkedIn] APIFY_API_TOKEN not configured, returning 500")
       return NextResponse.json(
         { error: "APIFY_API_TOKEN not configured" },
         { status: 500 }
       )
     }
+    console.log("✓ [LinkedIn] APIFY_API_TOKEN is configured")
 
-    console.log("🔍 Starting LinkedIn job search for:", query)
+    console.log("🔍 [LinkedIn] Starting job search for:", query)
 
     // Step 1: Generate optimized search query using AI
+    console.log("⏳ [LinkedIn] Step 1: Generating optimized search query via AI...")
+    const aiStartTime = Date.now()
     const searchQueryResponse = await generateSearchQuery(query, userProfile)
+    console.log(`✓ [LinkedIn] AI query generated in ${Date.now() - aiStartTime}ms`)
     
     if (!searchQueryResponse.success || searchQueryResponse.queries.length === 0) {
-      console.error("Failed to generate search query:", searchQueryResponse.error)
+      console.error("❌ [LinkedIn] Failed to generate search query:", searchQueryResponse.error)
       return NextResponse.json(
         { error: searchQueryResponse.error || "Failed to generate search query" },
         { status: 500 }
@@ -46,16 +59,25 @@ export async function POST(request: NextRequest) {
     }
 
     const generatedQuery = searchQueryResponse.queries[0]
-    console.log("🤖 AI Generated Query:", generatedQuery.description)
-    console.log("📋 Search Params:", JSON.stringify(generatedQuery.params, null, 2))
+    console.log("🤖 [LinkedIn] AI Generated Query:", generatedQuery.description)
+    console.log("📋 [LinkedIn] Search Params:", JSON.stringify(generatedQuery.params, null, 2))
 
     // Step 2: Call Apify LinkedIn Job Search API
+    console.log("⏳ [LinkedIn] Step 2: Calling Apify LinkedIn Job Search API...")
+    const apifyStartTime = Date.now()
     const jobs = await searchLinkedInJobs(generatedQuery.params)
+    console.log(`✓ [LinkedIn] Apify search completed in ${Date.now() - apifyStartTime}ms`)
     
-    console.log(`✅ Found ${jobs.length} jobs`)
+    console.log(`✅ [LinkedIn] Found ${jobs.length} jobs`)
 
     // Step 3: Transform jobs to our format for the frontend
+    console.log("⏳ [LinkedIn] Step 3: Transforming jobs to frontend format...")
     const results = jobs.map(job => transformJobToResult(job))
+    console.log(`✓ [LinkedIn] Transformed ${results.length} jobs`)
+
+    const totalTime = Date.now() - startTime
+    console.log(`🏁 [LinkedIn] Total request time: ${totalTime}ms (${(totalTime/1000).toFixed(1)}s)`)
+    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
     return NextResponse.json({
       results,
@@ -64,7 +86,10 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error: any) {
-    console.error("LinkedIn Job Search Error:", error)
+    const totalTime = Date.now() - startTime
+    console.error(`❌ [LinkedIn] Error after ${totalTime}ms:`, error)
+    console.error("❌ [LinkedIn] Error stack:", error.stack)
+    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
     return NextResponse.json(
       { error: error.message || "Failed to search LinkedIn jobs" },
       { status: 500 }
@@ -79,23 +104,35 @@ async function generateSearchQuery(
   query: string, 
   userProfile?: any
 ): Promise<CreateLinkedInSearchQueryOutput> {
-  // Use internal URL for server-to-server calls (never expose to frontend)
-  const baseUrl = process.env.INTERNAL_API_URL || process.env.VERCEL_URL 
-    ? `https://${process.env.VERCEL_URL}` 
-    : "http://localhost:3000"
+  // For server-to-server calls, use relative URL which Next.js handles internally
+  // This avoids issues with port mismatches and works correctly on Vercel
+  const url = `/api/create-search-query/linkedin`
   
-  const response = await fetch(`${baseUrl}/api/create-search-query/linkedin`, {
+  // We need an absolute URL for server-side fetch, so construct it properly
+  const baseUrl = process.env.VERCEL_URL 
+    ? `https://${process.env.VERCEL_URL}`
+    : `http://localhost:${process.env.PORT || 3000}`
+  
+  const fullUrl = `${baseUrl}${url}`
+  console.log("   📡 [LinkedIn] Calling AI endpoint:", fullUrl)
+  
+  const response = await fetch(fullUrl, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ query, userProfile }),
   })
 
+  console.log("   📡 [LinkedIn] AI endpoint response status:", response.status)
+
   if (!response.ok) {
     const error = await response.json()
+    console.error("   ❌ [LinkedIn] AI endpoint error:", error)
     throw new Error(error.error || "Failed to generate search query")
   }
 
-  return response.json()
+  const result = await response.json()
+  console.log("   ✓ [LinkedIn] AI endpoint returned successfully")
+  return result
 }
 
 /**
@@ -181,17 +218,33 @@ async function executeSearch(
   client: ApifyClient, 
   params: LinkedInJobSearchParams
 ): Promise<LinkedInJobResult[]> {
-  console.log("📡 Calling Apify LinkedIn Job Search API...")
+  const searchStartTime = Date.now()
+  console.log("   📡 [Apify] Starting Actor call...")
+  console.log("   📡 [Apify] Actor: fantastic-jobs/advanced-linkedin-job-search-api")
+  console.log("   📡 [Apify] Params keys:", Object.keys(params).filter(k => (params as any)[k] !== undefined))
 
-  // Run the Actor
-  const run = await client.actor("fantastic-jobs/advanced-linkedin-job-search-api").call(params)
+  try {
+    // Run the Actor
+    console.log("   ⏳ [Apify] Waiting for Actor to complete...")
+    const run = await client.actor("fantastic-jobs/advanced-linkedin-job-search-api").call(params)
+    console.log(`   ✓ [Apify] Actor run completed in ${Date.now() - searchStartTime}ms`)
+    console.log(`   📊 [Apify] Run ID: ${run.id}`)
+    console.log(`   📊 [Apify] Dataset ID: ${run.defaultDatasetId}`)
+    console.log(`   📊 [Apify] Status: ${run.status}`)
 
-  console.log(`💾 Apify run completed. Dataset ID: ${run.defaultDatasetId}`)
+    // Fetch results from the dataset
+    console.log("   ⏳ [Apify] Fetching items from dataset...")
+    const datasetStartTime = Date.now()
+    const { items } = await client.dataset(run.defaultDatasetId).listItems()
+    console.log(`   ✓ [Apify] Dataset fetch completed in ${Date.now() - datasetStartTime}ms`)
+    console.log(`   📊 [Apify] Items retrieved: ${items.length}`)
 
-  // Fetch results from the dataset
-  const { items } = await client.dataset(run.defaultDatasetId).listItems()
-
-  return items as unknown as LinkedInJobResult[]
+    return items as unknown as LinkedInJobResult[]
+  } catch (apifyError: any) {
+    console.error(`   ❌ [Apify] Error after ${Date.now() - searchStartTime}ms:`, apifyError.message)
+    console.error("   ❌ [Apify] Error details:", apifyError)
+    throw apifyError
+  }
 }
 
 /**
