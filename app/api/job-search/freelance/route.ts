@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
     console.log("🔍 Starting Freelance.com job search for:", query)
 
     // Step 1: Generate optimized search queries using AI
-    const searchQueryResponse = await generateSearchQuery(query, userProfile)
+    const searchQueryResponse = await generateSearchQuery(query, userProfile, request.url)
     
     if (!searchQueryResponse.success || !searchQueryResponse.generatedQuery) {
       console.error("Failed to generate Freelance search query:", searchQueryResponse.error)
@@ -113,14 +113,13 @@ export async function POST(request: NextRequest) {
  */
 async function generateSearchQuery(
   query: string, 
-  userProfile?: any
+  userProfile: any,
+  requestUrl: string
 ): Promise<CreateFreelanceSearchQueryOutput> {
-  // For server-to-server calls, construct absolute URL properly
-  const baseUrl = process.env.VERCEL_URL 
-    ? `https://${process.env.VERCEL_URL}`
-    : `http://localhost:${process.env.PORT || 3000}`
+  // Use the incoming request URL as base - this works correctly on Vercel
+  const fullUrl = new URL("/api/create-search-query/freelance", requestUrl).toString()
   
-  const response = await fetch(`${baseUrl}/api/create-search-query/freelance`, {
+  const response = await fetch(fullUrl, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ query, userProfile }),

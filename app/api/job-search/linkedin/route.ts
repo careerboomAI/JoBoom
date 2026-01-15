@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
     // Step 1: Generate optimized search query using AI
     console.log("⏳ [LinkedIn] Step 1: Generating optimized search query via AI...")
     const aiStartTime = Date.now()
-    const searchQueryResponse = await generateSearchQuery(query, userProfile)
+    const searchQueryResponse = await generateSearchQuery(query, userProfile, request.url)
     console.log(`✓ [LinkedIn] AI query generated in ${Date.now() - aiStartTime}ms`)
     
     if (!searchQueryResponse.success || searchQueryResponse.queries.length === 0) {
@@ -102,18 +102,12 @@ export async function POST(request: NextRequest) {
  */
 async function generateSearchQuery(
   query: string, 
-  userProfile?: any
+  userProfile: any,
+  requestUrl: string
 ): Promise<CreateLinkedInSearchQueryOutput> {
-  // For server-to-server calls, use relative URL which Next.js handles internally
-  // This avoids issues with port mismatches and works correctly on Vercel
-  const url = `/api/create-search-query/linkedin`
-  
-  // We need an absolute URL for server-side fetch, so construct it properly
-  const baseUrl = process.env.VERCEL_URL 
-    ? `https://${process.env.VERCEL_URL}`
-    : `http://localhost:${process.env.PORT || 3000}`
-  
-  const fullUrl = `${baseUrl}${url}`
+  // Use the incoming request URL as base - this works correctly on Vercel
+  // Same pattern as Indeed which works in production
+  const fullUrl = new URL("/api/create-search-query/linkedin", requestUrl).toString()
   console.log("   📡 [LinkedIn] Calling AI endpoint:", fullUrl)
   
   const response = await fetch(fullUrl, {
